@@ -21,6 +21,9 @@ export interface PhoneInputProps {
     onChangePhoneNumber?(phoneNumber: string): void
     onFocus?(event: NativeSyntheticEvent<TextInputFocusEventData>): void
     onBlur?(event: NativeSyntheticEvent<TextInputFocusEventData>): void
+    
+    // Bilal: added the following statement 
+    rtl?: boolean
 }
 
 export interface PhoneInputChangeEvent {
@@ -41,7 +44,10 @@ const PhoneInput = forwardRef(({
     onChange = () => {},
     onChangePhoneNumber = () => {},
     onFocus,
-    onBlur
+    onBlur, 
+    
+    // Bilal: added the following statement 
+    rtl?: boolean
 }: PhoneInputProps, ref) => {
 
     const initialDialCode = useMemo(() => dialCodes.find(dc => initialCountry && dc.countryCode === initialCountry.toUpperCase()), [])
@@ -113,32 +119,45 @@ const PhoneInput = forwardRef(({
         setCountryPickerVisible(false)
     }
 
+    // Bilal: moved this component from the return statement to a constant here
+   const countryComponent = 
+       <TouchableOpacity
+          style={{ flexDirection: 'row' }}
+          onPress={openCountryPicker}
+        >
+             <CountryFlag dialCode={dialCode} />
+        </TouchableOpacity>;
+       
+    // Bilal: moved this component from the return statement to a constant here
+    const phoneComponent = 
+        <TextInput
+           dataDetectorTypes={['phoneNumber']}
+           keyboardType={'phone-pad'}
+           onChangeText={handleChangeText}
+           autoFocus={autoFocus}
+           value={phoneNumber}
+           onFocus={onFocus}
+           onBlur={onBlur}
+           style={[{
+             borderWidth: 0,
+             flexGrow: 1,
+             height: 40,
+             paddingLeft: 0
+           },textStyle]} />;
+    
     return (
         <>
             <View ref={ref as any} style={[{
                 borderColor: '#eeeeee',
                 flexDirection: 'row'
             },style]}>
-                <TouchableOpacity
-                    style={{ flexDirection: 'row' }}
-                    onPress={openCountryPicker}
-                >
-                    <CountryFlag dialCode={dialCode} />
-                </TouchableOpacity>
-                <TextInput
-                    dataDetectorTypes={['phoneNumber']}
-                    keyboardType={'phone-pad'}
-                    onChangeText={handleChangeText}
-                    autoFocus={autoFocus}
-                    value={phoneNumber}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
-                    style={[{
-                        borderWidth: 0,
-                        flexGrow: 1,
-                        height: 40,
-                        paddingLeft: 0
-                    },textStyle]} />
+                {/* Bilal: when RTL is not set, we display the components in the default order */}
+                {!rtl && (countryComponent)}
+                {!rtl && (phoneComponent)}
+
+                {/* Bilal: when RTL is set, we display the components in the default order */}
+                {rtl && (phoneComponent)}
+                {rtl && (countryComponent)}
             </View>
             <CountryPicker
                 visible={countryPickerVisible}
